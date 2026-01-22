@@ -4,6 +4,6 @@
     <file url="file://$PROJECT_DIR$/ApiGatewayService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/AuthServcie/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/DiscoveryService/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/MessagingService/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ProfileService/src/main/java" charset="UTF-8" />
   </component>
 </project>
