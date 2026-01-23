@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.vedavyaas</groupId>
-    <artifactId>AuthServcie</artifactId>
+    <artifactId>AuthService</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>AuthServcie</name>
     <description>AuthService</description>

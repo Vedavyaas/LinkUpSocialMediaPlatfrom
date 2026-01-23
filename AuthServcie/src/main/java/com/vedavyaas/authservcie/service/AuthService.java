@@ -27,25 +27,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
-    private final KafkaMessage kafkaMessage;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtEncoder jwtEncoder, KafkaMessage kafkaMessage) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtEncoder jwtEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtEncoder = jwtEncoder;
-        this.kafkaMessage = kafkaMessage;
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     public String createAccount(LoginRequest loginRequest){
         if(userRepository.existsByUsername(loginRequest.username())) return "Username already exists";
 
         UserEntity user = new UserEntity(loginRequest.username(), passwordEncoder.encode(loginRequest.password()));
         userRepository.save(user);
 
-
-        kafkaMessage.sendMessage("user-registration", loginRequest.username());
         return "Account created successfully";
     }
 

@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long Id;
+    private Long id;
     private String username;
 
     public UserEntity() {
@@ -21,11 +21,11 @@ public class UserEntity {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getUsername() {

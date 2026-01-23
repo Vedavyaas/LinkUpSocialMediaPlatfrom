@@ -14,7 +14,7 @@ import jakarta.persistence.*;
 public class RelationShipEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long Id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "follower_id")
@@ -68,5 +68,12 @@ public class RelationShipEntity {
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
+    }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

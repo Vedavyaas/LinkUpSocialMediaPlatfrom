@@ -14,6 +14,8 @@ public class UserEntity {
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
+    private boolean sent;
+
     public UserEntity() {
     }
 
@@ -21,6 +23,7 @@ public class UserEntity {
         this.username = username;
         this.password = password;
         this.role = Role.USER;
+        this.sent = false;
     }
 
     public Long getId() {
@@ -53,5 +56,13 @@ public class UserEntity {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isSent() {
+        return sent;
+    }
+
+    public void setSent(boolean sent) {
+        this.sent = sent;
     }
 }
