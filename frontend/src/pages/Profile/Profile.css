@@ -145,3 +145,103 @@
 .macos-btn-danger:active {
     transform: scale(0.98);
 }
+
+/* Clickable Stats */
+.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clickable:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* List Modal */
+.list-modal {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* Limit height */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-list-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.user-list-item:last-child {
+    border-bottom: none;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #555;
+    font-size: 1rem;
+}
+
+.user-name {
+    font-weight: 500;
+}
+
+.small-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.macos-btn-ghost-danger {
+    background: transparent;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.macos-btn-ghost-danger:hover {
+    background: var(--danger-color);
+    color: white;
+}

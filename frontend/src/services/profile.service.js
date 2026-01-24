@@ -42,23 +42,6 @@ const profileService = {
         return response.data;
     },
 
-    // --- Blocking ---
-
-    blockUser: async (id) => {
-        const response = await api.put(`/PROFILESERVICE/block/user?id=${id}`);
-        return response.data;
-    },
-
-    unblockUser: async (id) => {
-        const response = await api.put(`/PROFILESERVICE/unblock/user?id=${id}`);
-        return response.data;
-    },
-
-    isBlocked: async (id) => {
-        const response = await api.get(`/PROFILESERVICE/is/blocked?id=${id}`);
-        return response.data;
-    },
-
     // --- Relationship / Follow Flow ---
 
     // Send follow request OR follow immediately (depending on logic)
@@ -95,15 +78,21 @@ const profileService = {
 
     // --- Lists and Counts ---
 
-    // Get my followers
-    getFollowers: async () => {
-        const response = await api.get('/PROFILESERVICE/get/followers');
+    // Get followers (accepts optional id)
+    getFollowers: async (id) => {
+        const url = id
+            ? `/PROFILESERVICE/get/followers?id=${id}`
+            : '/PROFILESERVICE/get/followers';
+        const response = await api.get(url);
         return response.data;
     },
 
-    // Get who I am following
-    getFollowing: async () => {
-        const response = await api.get('/PROFILESERVICE/get/following');
+    // Get following (accepts optional id)
+    getFollowing: async (id) => {
+        const url = id
+            ? `/PROFILESERVICE/get/following?id=${id}`
+            : '/PROFILESERVICE/get/following';
+        const response = await api.get(url);
         return response.data;
     },
 

@@ -15,11 +15,12 @@ public class KafkaMessage {
         this.relationShipRepository = relationShipRepository;
     }
 
+    @jakarta.transaction.Transactional
     @KafkaListener(topics = "user-relationship", groupId = "msgGroup")
     public void listenRelationship(String message){
         String[] details = message.split(",");
 
-        if(details[2] != null && details[2].equals("deleted")) {
+        if (details.length > 2 && "deleted".equals(details[2])) {
             relationShipRepository.deleteRelationShipEntitiesByFollowerAndFollowing(details[0], details[1]);
             return;
         }

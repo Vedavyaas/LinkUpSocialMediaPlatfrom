@@ -105,6 +105,7 @@ public class UserService {
     @Transactional
     public String changeUsername(String username, String newUsername) {
         UserEntity userEntity = userRepository.findByUsername(username);
+        if (userEntity == null) return "User not found";
 
         userEntity.setUsername(newUsername);
         userRepository.save(userEntity);
@@ -123,6 +124,18 @@ public class UserService {
         UserEntity user = userRepository.findByUsername(username);
 
         return relationShipRepository.findFollowingOfUser(user, Status.ACCEPTED);
+    }
+
+    public List<UserEntity> getFollowers(Long id) {
+        Optional<UserEntity> user = userRepository.findById(id);
+        if (user.isEmpty()) return new ArrayList<>();
+        return relationShipRepository.findFollowersOfUsersAndIsAccepted(user.get(), Status.ACCEPTED);
+    }
+
+    public List<UserEntity> getFollowing(Long id) {
+        Optional<UserEntity> user = userRepository.findById(id);
+        if (user.isEmpty()) return new ArrayList<>();
+        return relationShipRepository.findFollowingOfUser(user.get(), Status.ACCEPTED);
     }
 
     public int countOfFollowers(String username) {
