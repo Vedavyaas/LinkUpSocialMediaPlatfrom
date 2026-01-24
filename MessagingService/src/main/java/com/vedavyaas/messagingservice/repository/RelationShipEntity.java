@@ -12,14 +12,12 @@ public class RelationShipEntity {
     private Long Id;
     private String follower;
     private String following;
-    private boolean isBlocked;
 
     public RelationShipEntity() { }
 
-    public RelationShipEntity(String follower, String following, boolean isBlocked) {
+    public RelationShipEntity(String follower, String following) {
         this.follower = follower;
         this.following = following;
-        this.isBlocked = isBlocked;
     }
 
     public String getFollower() {
@@ -36,13 +34,5 @@ public class RelationShipEntity {
 
     public void setFollowing(String following) {
         this.following = following;
-    }
-
-    public boolean isBlocked() {
-        return isBlocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
     }
 }

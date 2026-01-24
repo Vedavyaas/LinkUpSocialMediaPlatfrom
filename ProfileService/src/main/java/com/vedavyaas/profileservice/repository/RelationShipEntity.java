@@ -26,8 +26,8 @@ public class RelationShipEntity {
 
     @Enumerated(EnumType.STRING)
     private Status status;
-    private boolean blocked;
     private boolean isSent;
+
     public RelationShipEntity() {
     }
 
@@ -35,7 +35,6 @@ public class RelationShipEntity {
         this.follower = follower;
         this.following = following;
         this.status = Status.PENDING;
-        this.blocked = false;
         this.isSent = true;
     }
 
@@ -61,14 +60,6 @@ public class RelationShipEntity {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public boolean isBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
     }
 
     public Long getId() {

@@ -32,7 +32,7 @@ public class KafkaMessage {
     public void sendMessage(){
         List<RelationShipEntity> relationShipEntities = relationShipRepository.findAllByIsSent(false);
         for (var relation : relationShipEntities) {
-            String message = relation.getFollower().getUsername() + "," + relation.getFollowing().getUsername() + "," + relation.isBlocked();
+            String message = relation.getFollower().getUsername() + "," + relation.getFollowing().getUsername();
             kafkaTemplate.send("user-relationship", message).whenComplete((result, ex) -> {
                 if (ex == null) {
                     relation.setSent(true);

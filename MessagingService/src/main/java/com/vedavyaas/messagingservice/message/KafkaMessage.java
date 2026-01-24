@@ -18,13 +18,13 @@ public class KafkaMessage {
     @KafkaListener(topics = "user-relationship", groupId = "msgGroup")
     public void listenRelationship(String message){
         String[] details = message.split(",");
-        if(details[2].equals("deleted")) {
+
+        if(details[2] != null && details[2].equals("deleted")) {
             relationShipRepository.deleteRelationShipEntitiesByFollowerAndFollowing(details[0], details[1]);
             return;
         }
-        boolean flag = details[2].equals("true");
-        RelationShipEntity relationShipEntity = new RelationShipEntity(details[0], details[1], flag);
 
+        RelationShipEntity relationShipEntity = new RelationShipEntity(details[0], details[1]);
         relationShipRepository.save(relationShipEntity);
     }
 

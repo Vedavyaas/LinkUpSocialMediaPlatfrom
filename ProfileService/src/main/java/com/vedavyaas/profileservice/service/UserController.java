@@ -67,18 +67,6 @@ public class UserController {
         return userService.changeUsername(username, newUsername);
     }
 
-    @PutMapping("/block/user")
-    public String blockUser(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
-        String username = jwt.getSubject();
-        return userService.blockUserOrUnblockUser(username, id, true);
-    }
-
-    @PutMapping("/unblock/user")
-    public String unblockUser(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
-        String username = jwt.getSubject();
-        return userService.blockUserOrUnblockUser(username, id, false);
-    }
-
     @GetMapping("/get/followers")
     public List<UserEntity> getListFollowers(@AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getSubject();

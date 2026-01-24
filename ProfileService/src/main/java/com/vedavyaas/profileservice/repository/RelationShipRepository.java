@@ -16,7 +16,6 @@ public interface RelationShipRepository extends JpaRepository<RelationShipEntity
     Optional<RelationShipEntity> findByFollowerAndFollowing(UserEntity follower, UserEntity following);
 
     void deleteRelationShipEntitiesByFollowerAndFollowing(UserEntity follower, UserEntity following);
-    boolean existsByFollowerAndFollowingAndBlocked(UserEntity follower, UserEntity following, boolean blocked);
 
     @Query("SELECT r.follower FROM RelationShipEntity r WHERE r.following = :user AND r.status = :status")
     List<UserEntity> findFollowersOfUsersAndIsAccepted(UserEntity user, Status status);

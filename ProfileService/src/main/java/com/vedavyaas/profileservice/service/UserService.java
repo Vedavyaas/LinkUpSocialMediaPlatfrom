@@ -49,9 +49,6 @@ public class UserService {
         if (userEntity.isEmpty()) return "User does not exists";
         Long userId = userRepository.findUserIdByUsername(user).getId();
 
-        if (relationShipRepository.existsByFollowerAndFollowingAndBlocked((userRepository.findById(userId).get()), userEntity.get(), true))
-            return "Blocked";
-
         RelationShipEntity relationShipEntity = new RelationShipEntity(userRepository.findById(userId).get(), userEntity.get());
         relationShipRepository.save(relationShipEntity);
         return "Wait for approval";
@@ -116,25 +113,6 @@ public class UserService {
         return "Username changed successfully";
     }
 
-
-    public String blockUserOrUnblockUser(String username, Long id, boolean doBlock) {
-        Optional<UserEntity> userEntity = userRepository.findById(id);
-        if (userEntity.isEmpty()) return "User not found";
-
-
-        UserEntity user = userRepository.findByUsername(username);
-        Optional<RelationShipEntity> relationShipEntity = relationShipRepository.findByFollowerAndFollowing(user, userEntity.get());
-        if (relationShipEntity.isEmpty())
-            relationShipEntity = relationShipRepository.findByFollowerAndFollowing(userEntity.get(), user);
-
-        if (relationShipEntity.isEmpty()) return "User not found.(User not in list of follower/following)";
-
-        relationShipEntity.get().setBlocked(doBlock);
-        relationShipRepository.save(relationShipEntity.get());
-        kafkaMessage.saveMessage(relationShipEntity.get().getFollower() + "," + relationShipEntity.get().getFollowing() + "," + relationShipEntity.get().isBlocked());
-        return doBlock ? "User blocked successfully" : "User unblocked successfully";
-    }
-
     public List<UserEntity> getFollowers(String username) {
         UserEntity user = userRepository.findByUsername(username);
 
@@ -153,26 +131,6 @@ public class UserService {
 
     public int countOfFollowing(String username) {
         return getFollowing(username).size();
-    }
-
-    public boolean isBlocked(String currentUsername, Long targetUserId) {
-        UserEntity currentUser = userRepository.findByUsername(currentUsername);
-        Optional<UserEntity> targetUserOpt = userRepository.findById(targetUserId);
-
-        if (targetUserOpt.isEmpty()) {
-            return false;
-        }
-
-        UserEntity targetUser = targetUserOpt.get();
-        Optional<RelationShipEntity> relation = relationShipRepository.findByFollowerAndFollowing(currentUser, targetUser);
-        if (relation.isEmpty()) {
-            relation = relationShipRepository.findByFollowerAndFollowing(targetUser, currentUser);
-        }
-
-        if (relation.isEmpty()) {
-             return false;
-        }
-        return relation.get().isBlocked();
     }
 
     public int getFollowerCount(Long userId) {
