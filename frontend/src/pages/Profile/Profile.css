@@ -124,3 +124,24 @@
         justify-content: center;
     }
 }
+
+/* Hazard/Danger Button */
+.macos-btn-danger {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.macos-btn-danger:hover {
+    background-color: #d32f2f;
+}
+
+.macos-btn-danger:active {
+    transform: scale(0.98);
+}

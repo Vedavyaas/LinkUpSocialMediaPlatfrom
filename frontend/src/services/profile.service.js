@@ -54,6 +54,11 @@ const profileService = {
         return response.data;
     },
 
+    isBlocked: async (id) => {
+        const response = await api.get(`/PROFILESERVICE/is/blocked?id=${id}`);
+        return response.data;
+    },
+
     // --- Relationship / Follow Flow ---
 
     // Send follow request OR follow immediately (depending on logic)
@@ -102,13 +107,20 @@ const profileService = {
         return response.data;
     },
 
-    getFollowersCount: async () => {
-        const response = await api.get('/PROFILESERVICE/get/followers/count');
+    getFollowersCount: async (id) => {
+        // Use new endpoint that supports ID
+        const url = id
+            ? `/PROFILESERVICE/get/stats/followers?id=${id}`
+            : '/PROFILESERVICE/get/stats/followers';
+        const response = await api.get(url);
         return response.data;
     },
 
-    getFollowingCount: async () => {
-        const response = await api.get('/PROFILESERVICE/count/following/count');
+    getFollowingCount: async (id) => {
+        const url = id
+            ? `/PROFILESERVICE/get/stats/following?id=${id}`
+            : '/PROFILESERVICE/get/stats/following';
+        const response = await api.get(url);
         return response.data;
     }
 };

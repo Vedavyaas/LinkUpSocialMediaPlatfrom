@@ -103,4 +103,26 @@ public class UserController {
         String username = jwt.getSubject();
         return userService.countOfFollowing(username);
     }
+
+    @GetMapping("/is/blocked")
+    public boolean isBlocked(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
+        String username = jwt.getSubject();
+        return userService.isBlocked(username, id);
+    }
+
+    @GetMapping("/get/stats/followers")
+    public int getStatsFollowers(@RequestParam(required = false) Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (id != null) {
+            return userService.getFollowerCount(id);
+        }
+        return userService.countOfFollowers(jwt.getSubject());
+    }
+
+    @GetMapping("/get/stats/following")
+    public int getStatsFollowing(@RequestParam(required = false) Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (id != null) {
+            return userService.getFollowingCount(id);
+        }
+        return userService.countOfFollowing(jwt.getSubject());
+    }
 }

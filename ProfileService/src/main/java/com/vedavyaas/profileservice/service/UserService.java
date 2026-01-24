@@ -147,4 +147,43 @@ public class UserService {
     public int countOfFollowing(String username) {
         return getFollowing(username).size();
     }
+
+    public boolean isBlocked(String currentUsername, Long targetUserId) {
+        UserEntity currentUser = userRepository.findByUsername(currentUsername);
+        Optional<UserEntity> targetUserOpt = userRepository.findById(targetUserId);
+
+        if (targetUserOpt.isEmpty()) {
+            return false;
+        }
+
+        UserEntity targetUser = targetUserOpt.get();
+
+        // Check relationship in both directions, matching logic in unblockUserOrUnblockUser
+        Optional<RelationShipEntity> relation = relationShipRepository.findByFollowerAndFollowing(currentUser, targetUser);
+        if (relation.isEmpty()) {
+            relation = relationShipRepository.findByFollowerAndFollowing(targetUser, currentUser);
+        }
+
+        if (relation.isEmpty()) {
+             return false;
+        }
+        return relation.get().isBlocked();
+    }
+
+    // Overloaded methods for ID-based stats
+    public int getFollowerCount(Long userId) {
+        Optional<UserEntity> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) return 0;
+        
+        // We can reuse the repository method if we fetch the entity first
+        // Note: findFollowersOfUsersAndIsAccepted takes UserEntity
+        return relationShipRepository.findFollowersOfUsersAndIsAccepted(userOpt.get(), Status.ACCEPTED).size();
+    }
+
+    public int getFollowingCount(Long userId) {
+        Optional<UserEntity> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) return 0;
+
+        return relationShipRepository.findFollowingOfUser(userOpt.get(), Status.ACCEPTED).size();
+    }
 }

@@ -7,6 +7,7 @@ import './Profile.css';
 const Profile = () => {
     const { id } = useParams(); // Should be optional, if empty show 'my' profile
     const [profile, setProfile] = useState(null);
+    const [isBlocked, setIsBlocked] = useState(false);
     const [stats, setStats] = useState({ followers: 0, following: 0 });
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -44,13 +45,30 @@ const Profile = () => {
             setProfile(profileData);
             setNewUsername(profileData.username);
 
-            // Fetch stats logic
-            if (!id) { // Own profile
-                const followersCount = await profileService.getFollowersCount();
-                const followingCount = await profileService.getFollowingCount();
-                setStats({ followers: followersCount, following: followingCount });
+            // Check blocked status if viewing another user
+            if (!isOwnProfile) {
+                const targetId = profileData.id || profileData.Id;
+                try {
+                    const blockedStatus = await profileService.isBlocked(targetId);
+                    setIsBlocked(blockedStatus);
+                } catch (e) {
+                    console.error("Failed to check block status", e);
+                }
             } else {
-                setStats({ followers: 0, following: 0 });
+                setIsBlocked(false);
+            }
+
+            // Fetch stats logic
+            // Always fetch stats, implementing fix for "other user stats not visible"
+            // If viewing another user, pass their ID. If viewing self, pass nothing or ID.
+            const statsTargetId = id ? (profileData.id || profileData.Id) : null;
+
+            try {
+                const followersCount = await profileService.getFollowersCount(statsTargetId);
+                const followingCount = await profileService.getFollowingCount(statsTargetId);
+                setStats({ followers: followersCount, following: followingCount });
+            } catch (e) {
+                console.error("Failed to load stats", e);
             }
 
         } catch (err) {
@@ -91,6 +109,53 @@ const Profile = () => {
         }
     };
 
+    const handleBlock = async () => {
+        if (!profile) return;
+        // Confirm block
+        if (!window.confirm(`Are you sure you want to block ${profile.username}?`)) return;
+
+        const targetId = profile.id || profile.Id;
+        try {
+            await profileService.blockUser(targetId);
+
+            // Verify block status from backend
+            const confirmedBlock = await profileService.isBlocked(targetId);
+            if (confirmedBlock) {
+                setIsBlocked(true);
+            } else {
+                alert("Block verification failed. Please try again.");
+            }
+        } catch (err) {
+            console.error("Block failed", err);
+            let msg = err.response?.data?.message || err.response?.data || "Failed to block user";
+            if (typeof msg === 'object') msg = JSON.stringify(msg);
+            alert("Failed: " + msg);
+        }
+    };
+
+    const handleUnblock = async () => {
+        if (!profile) return;
+        if (!window.confirm(`Unblock ${profile.username}?`)) return;
+
+        const targetId = profile.id || profile.Id;
+        try {
+            await profileService.unblockUser(targetId);
+
+            // Verify status - should be false now
+            const isStillBlocked = await profileService.isBlocked(targetId);
+            if (!isStillBlocked) {
+                setIsBlocked(false);
+            } else {
+                alert("Unblock verification failed.");
+            }
+        } catch (err) {
+            console.error("Unblock failed", err);
+            let msg = err.response?.data?.message || err.response?.data || "Failed to unblock user";
+            if (typeof msg === 'object') msg = JSON.stringify(msg);
+            alert("Failed: " + msg);
+        }
+    };
+
     if (isLoading) return <div className="loading-state">Loading profile...</div>;
     if (!profile) return <div className="error-state">Profile not found. {error} (ID: {id || 'me'})</div>;
 
@@ -112,9 +177,14 @@ const Profile = () => {
                                 </button>
                             )}
                             {!isOwnProfile && (
-                                <button className="macos-btn" onClick={handleFollow}>
-                                    Follow
-                                </button>
+                                <div className="profile-actions">
+                                    <button className="macos-btn" onClick={handleFollow}>
+                                        Follow
+                                    </button>
+                                    <button className="macos-btn-danger" onClick={handleBlock} style={{ marginLeft: '10px' }}>
+                                        Block
+                                    </button>
+                                </div>
                             )}
                         </div>
 
