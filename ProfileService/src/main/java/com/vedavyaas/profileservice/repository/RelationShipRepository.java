@@ -1,4 +1,4 @@
-package com.vedavyaas.profileservice.user;
+package com.vedavyaas.profileservice.repository;
 
 import com.vedavyaas.profileservice.assets.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +23,5 @@ public interface RelationShipRepository extends JpaRepository<RelationShipEntity
 
     @Query("SELECT r.following FROM RelationShipEntity r WHERE r.follower = :user AND r.status =:status")
     List<UserEntity> findFollowingOfUser(UserEntity user, Status status);
+    List<RelationShipEntity> findAllByIsSent(boolean isSent);
 }

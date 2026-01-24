@@ -1,4 +1,4 @@
-package com.vedavyaas.profileservice.user;
+package com.vedavyaas.profileservice.repository;
 
 import com.vedavyaas.profileservice.projections.UserID;
 import org.jspecify.annotations.NonNull;

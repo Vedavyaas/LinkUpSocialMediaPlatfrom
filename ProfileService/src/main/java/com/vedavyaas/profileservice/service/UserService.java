@@ -1,10 +1,11 @@
 package com.vedavyaas.profileservice.service;
 
 import com.vedavyaas.profileservice.assets.Status;
-import com.vedavyaas.profileservice.user.RelationShipEntity;
-import com.vedavyaas.profileservice.user.RelationShipRepository;
-import com.vedavyaas.profileservice.user.UserEntity;
-import com.vedavyaas.profileservice.user.UserRepository;
+import com.vedavyaas.profileservice.message.KafkaMessage;
+import com.vedavyaas.profileservice.repository.RelationShipEntity;
+import com.vedavyaas.profileservice.repository.RelationShipRepository;
+import com.vedavyaas.profileservice.repository.UserEntity;
+import com.vedavyaas.profileservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,10 +20,12 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final RelationShipRepository relationShipRepository;
+    private final KafkaMessage kafkaMessage;
 
-    public UserService(UserRepository userRepository, RelationShipRepository relationShipRepository) {
+    public UserService(UserRepository userRepository, RelationShipRepository relationShipRepository, KafkaMessage kafkaMessage) {
         this.userRepository = userRepository;
         this.relationShipRepository = relationShipRepository;
+        this.kafkaMessage = kafkaMessage;
     }
 
     public List<UserEntity> getUsers(String username) {
@@ -68,6 +71,7 @@ public class UserService {
 
         Optional<RelationShipEntity> relationShipEntity = relationShipRepository.findByFollowerAndFollowing(userEntity.get(), acceptorUser);
         relationShipEntity.get().setStatus(Status.ACCEPTED);
+        relationShipEntity.get().setSent(false);
         relationShipRepository.save(relationShipEntity.get());
 
         return "Follow request accepted successfully";
@@ -79,6 +83,7 @@ public class UserService {
         if (userEntity.isEmpty()) return "User not found";
         relationShipRepository.deleteRelationShipEntitiesByFollowerAndFollowing(userRepository.findByUsername(username), userEntity.get());
 
+        kafkaMessage.sendDeleted(username+","+userEntity.get().getUsername()+",deleted");
         return "Unfollowed";
     }
 
@@ -88,6 +93,7 @@ public class UserService {
         if (userEntity.isEmpty()) return "User not found";
         relationShipRepository.deleteRelationShipEntitiesByFollowerAndFollowing(userEntity.get(), userRepository.findByUsername(username));
 
+        kafkaMessage.sendDeleted(userEntity.get().getUsername()+","+username+",deleted");
         return "Deleted request";
     }
 
@@ -106,11 +112,12 @@ public class UserService {
         userEntity.setUsername(newUsername);
         userRepository.save(userEntity);
 
+        kafkaMessage.sendUsernameChange(username+","+newUsername);
         return "Username changed successfully";
     }
 
 
-    public String unblockUserOrUnblockUser(String username, Long id, boolean doBlock) {
+    public String blockUserOrUnblockUser(String username, Long id, boolean doBlock) {
         Optional<UserEntity> userEntity = userRepository.findById(id);
         if (userEntity.isEmpty()) return "User not found";
 
@@ -124,7 +131,7 @@ public class UserService {
 
         relationShipEntity.get().setBlocked(doBlock);
         relationShipRepository.save(relationShipEntity.get());
-
+        kafkaMessage.saveMessage(relationShipEntity.get().getFollower() + "," + relationShipEntity.get().getFollowing() + "," + relationShipEntity.get().isBlocked());
         return doBlock ? "User blocked successfully" : "User unblocked successfully";
     }
 
@@ -157,8 +164,6 @@ public class UserService {
         }
 
         UserEntity targetUser = targetUserOpt.get();
-
-        // Check relationship in both directions, matching logic in unblockUserOrUnblockUser
         Optional<RelationShipEntity> relation = relationShipRepository.findByFollowerAndFollowing(currentUser, targetUser);
         if (relation.isEmpty()) {
             relation = relationShipRepository.findByFollowerAndFollowing(targetUser, currentUser);
@@ -170,13 +175,10 @@ public class UserService {
         return relation.get().isBlocked();
     }
 
-    // Overloaded methods for ID-based stats
     public int getFollowerCount(Long userId) {
         Optional<UserEntity> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return 0;
-        
-        // We can reuse the repository method if we fetch the entity first
-        // Note: findFollowersOfUsersAndIsAccepted takes UserEntity
+
         return relationShipRepository.findFollowersOfUsersAndIsAccepted(userOpt.get(), Status.ACCEPTED).size();
     }
 

@@ -1,4 +1,4 @@
-package com.vedavyaas.profileservice.user;
+package com.vedavyaas.profileservice.repository;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

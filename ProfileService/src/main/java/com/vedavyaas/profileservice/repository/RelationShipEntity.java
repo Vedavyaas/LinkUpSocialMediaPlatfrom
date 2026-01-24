@@ -1,4 +1,4 @@
-package com.vedavyaas.profileservice.user;
+package com.vedavyaas.profileservice.repository;
 
 import com.vedavyaas.profileservice.assets.Status;
 import jakarta.persistence.*;
@@ -27,7 +27,7 @@ public class RelationShipEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
     private boolean blocked;
-
+    private boolean isSent;
     public RelationShipEntity() {
     }
 
@@ -36,6 +36,7 @@ public class RelationShipEntity {
         this.following = following;
         this.status = Status.PENDING;
         this.blocked = false;
+        this.isSent = true;
     }
 
     public UserEntity getFollower() {
@@ -69,6 +70,7 @@ public class RelationShipEntity {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
+
     public Long getId() {
         return id;
     }
@@ -76,4 +78,13 @@ public class RelationShipEntity {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public boolean isSent() {
+        return isSent;
+    }
+
+    public void setSent(boolean sent) {
+        isSent = sent;
+    }
+
 }

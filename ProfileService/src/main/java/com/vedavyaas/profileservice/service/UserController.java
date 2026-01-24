@@ -1,7 +1,6 @@
 package com.vedavyaas.profileservice.service;
 
-import com.vedavyaas.profileservice.user.UserEntity;
-import org.apache.catalina.User;
+import com.vedavyaas.profileservice.repository.UserEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -71,13 +70,13 @@ public class UserController {
     @PutMapping("/block/user")
     public String blockUser(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getSubject();
-        return userService.unblockUserOrUnblockUser(username, id, true);
+        return userService.blockUserOrUnblockUser(username, id, true);
     }
 
     @PutMapping("/unblock/user")
     public String unblockUser(@RequestParam Long id, @AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getSubject();
-        return userService.unblockUserOrUnblockUser(username, id, false);
+        return userService.blockUserOrUnblockUser(username, id, false);
     }
 
     @GetMapping("/get/followers")

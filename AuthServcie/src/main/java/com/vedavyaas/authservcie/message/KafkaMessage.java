@@ -4,11 +4,13 @@ package com.vedavyaas.authservcie.message;
 import com.vedavyaas.authservcie.repository.UserEntity;
 import com.vedavyaas.authservcie.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class KafkaMessage {
@@ -35,5 +37,17 @@ public class KafkaMessage {
                         }
                     });
         }
+    }
+
+    @KafkaListener(topics = "name-change", groupId = "authGroup")
+    public void usernameChange(String message){
+        String[] messages = message.split(",");
+        Optional<UserEntity> user = userRepository.findByUsername(messages[0]);
+        if (user.isEmpty()) {
+            // will be true made for suppressing warnings
+        }
+
+        user.get().setUsername(messages[1]);
+        userRepository.save(user.get());
     }
 }
