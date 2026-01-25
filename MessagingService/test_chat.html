@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 20px; }
+        .message { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h2>WebSocket Chat Test</h2>
+    <div>
+        <label>JWT Token (Bearer):</label>
+        <input type="text" id="token" placeholder="Paste JWT here" style="width: 300px;">
+        <button onclick="connect()">Connect</button>
+    </div>
+    <br>
+    <div>
+        <label>To User:</label>
+        <input type="text" id="toUser" placeholder="Username">
+        <label>Message:</label>
+        <input type="text" id="message" placeholder="Type a message">
+        <button onclick="send()">Send</button>
+    </div>
+    <div id="status">Status: Disconnected</div>
+    <div id="messages"></div>
+
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            var token = document.getElementById('token').value;
+            var socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+            
+            // Pass token in headers if required by your security config
+            // Note: Standard SockJS/Stomp over WebSockets might need headers in connect
+            stompClient.connect({'Authorization': 'Bearer ' + token}, function (frame) {
+                document.getElementById('status').innerText = 'Status: Connected';
+                console.log('Connected: ' + frame);
+                
+                // Subscribe to user specific queue
+                stompClient.subscribe('/user/queue/chat', function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+            }, function(error) {
+                 document.getElementById('status').innerText = 'Status: Error ' + error;
+            });
+        }
+
+        function send() {
+            var toUser = document.getElementById('toUser').value;
+            var message = document.getElementById('message').value;
+            
+            // New Payload Format
+            var payload = JSON.stringify({'toUser': toUser, 'message': message});
+            
+            stompClient.send("/app/chat", {}, payload);
+        }
+
+        function showMessage(msg) {
+            var messagesDiv = document.getElementById('messages');
+            var p = document.createElement('p');
+            p.className = 'message';
+            p.innerText = `[${msg.timestamp}] ${msg.fromUser}: ${msg.message}`;
+            messagesDiv.appendChild(p);
+        }
+    </script>
+</body>
+</html>

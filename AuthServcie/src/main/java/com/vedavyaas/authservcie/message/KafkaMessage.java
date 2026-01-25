@@ -22,7 +22,7 @@ public class KafkaMessage {
         this.userRepository = userRepository;
     }
 
-    @Scheduled(fixedRate = 1_000)
+    @Scheduled(fixedDelay = 700)
     @Transactional
     public void sendMessage() {
         List<UserEntity> users = userRepository.findAllBySent(false);

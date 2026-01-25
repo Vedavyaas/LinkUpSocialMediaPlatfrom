@@ -15,6 +15,11 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.List;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -23,11 +28,27 @@ public class JWTConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http.csrf(ServerHttpSecurity.CsrfSpec::disable);
+        http.cors(Customizer.withDefaults()); // Enable CORS
         http.oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
-        http.authorizeExchange(exchange -> exchange.pathMatchers("/eureka/**", "AUTHSERVICE/create/account/**", "AUTHSERVICE/authenticate/**", "AUTHSERVICE/forget/password/**").permitAll());
+        http.authorizeExchange(exchange -> exchange.pathMatchers("/eureka/**", "AUTHSERVICE/create/account/**", "AUTHSERVICE/authenticate/**", "AUTHSERVICE/forget/password/**", "/messagingservice/ws/**", "/MESSAGINGSERVICE/ws/**").permitAll());
         http.authorizeExchange(exchange -> exchange.anyExchange().authenticated());
 
         return http.build();
+    }
+
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+        corsConfig.setMaxAge(3600L);
+        corsConfig.addAllowedMethod("*");
+        corsConfig.addAllowedHeader("*");
+        corsConfig.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsWebFilter(source);
     }
 
     @Bean

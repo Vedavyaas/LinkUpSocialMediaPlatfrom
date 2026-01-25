@@ -19,19 +19,19 @@ const Layout = () => {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <span className="nav-icon">🏠</span>
-                        <span className="nav-label">Feed</span>
-                    </NavLink>
-
-                    <NavLink to="/search" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <span className="nav-icon">🔍</span>
-                        <span className="nav-label">Search</span>
+                    <NavLink to="/messages" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        <span className="nav-icon">💬</span>
+                        <span className="nav-label">Messages</span>
                     </NavLink>
 
                     <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <span className="nav-icon">👤</span>
                         <span className="nav-label">Profile</span>
+                    </NavLink>
+
+                    <NavLink to="/search" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        <span className="nav-icon">🔍</span>
+                        <span className="nav-label">Search</span>
                     </NavLink>
 
                     <NavLink to="/notifications" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>

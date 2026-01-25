@@ -21,12 +21,13 @@ import java.util.Base64;
 @Configuration
 public class JWTConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(Customizer.withDefaults()); // Enable CORS
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
         http.headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
-        http.authorizeHttpRequests(request -> request.requestMatchers("/h2-console/**").permitAll().anyRequest().authenticated());
+        http.authorizeHttpRequests(request -> request.requestMatchers("/h2-console/**", "/ws/**", "/error").permitAll().anyRequest().authenticated());
 
         return http.build();
     }

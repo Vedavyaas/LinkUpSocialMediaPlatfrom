@@ -28,7 +28,7 @@ public class KafkaMessage {
         userRepository.save(new UserEntity(message));
     }
 
-    @Scheduled(fixedRate = 1_000)
+    @Scheduled(fixedDelay = 700)
     public void sendMessage(){
         List<RelationShipEntity> relationShipEntities = relationShipRepository.findAllByIsSent(false);
         for (var relation : relationShipEntities) {

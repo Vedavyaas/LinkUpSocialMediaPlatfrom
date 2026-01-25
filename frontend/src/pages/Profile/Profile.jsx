@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import profileService from '../../services/profile.service';
 import authService from '../../services/auth';
 import './Profile.css';
+import ChatWindow from '../../components/Chat/ChatWindow';
 
 const Profile = () => {
     const { id } = useParams(); // Should be optional, if empty show 'my' profile
@@ -13,6 +14,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [error, setError] = useState('');
+    const [showChat, setShowChat] = useState(false);
 
     // List Modal State
     const [showFollowersModal, setShowFollowersModal] = useState(false);
@@ -21,7 +23,8 @@ const Profile = () => {
     const [isListLoading, setIsListLoading] = useState(false);
 
     // Friend Status (for follow button toggle)
-    const [isFollowing, setIsFollowing] = useState(false); // Simplistic check, ideally backend provides this
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [canMessage, setCanMessage] = useState(false);
 
     // Determine if we are viewing our own profile
     const currentUser = authService.getCurrentUser();
@@ -33,6 +36,7 @@ const Profile = () => {
 
     const fetchProfileData = async () => {
         setIsLoading(true);
+        setError('');
         try {
             let profileData;
 
@@ -42,8 +46,21 @@ const Profile = () => {
             } else {
                 // Fetch My Profile
                 if (!currentUser) throw new Error("Not logged in");
-                const users = await profileService.getUserByUsername(currentUser.username);
-                profileData = users.find(u => u.username === currentUser.username) || users[0];
+                // Try direct endpoint first if available, otherwise search
+                try {
+                    // Since getProfile is soft fallback, let's try search logic explicitly if we know endpoint is missing
+                    // or just use the search logic as primary for now based on service code
+                    const users = await profileService.getUserByUsername(currentUser.username);
+                    // Ensure users is an array
+                    if (Array.isArray(users)) {
+                        profileData = users.find(u => u.username === currentUser.username) || users[0];
+                    } else if (users && users.username) {
+                        // Maybe it returned a single user object?
+                        profileData = users;
+                    }
+                } catch (innerErr) {
+                    console.error("Search by username failed", innerErr);
+                }
             }
 
             if (!profileData) throw new Error("Profile not found");
@@ -53,29 +70,30 @@ const Profile = () => {
 
             // Fetch stats logic
             const statsTargetId = id ? (profileData.id || profileData.Id) : null;
+            // Only fetch stats if we have a valid ID or if it's "me" and backend handles it
+            // Adjust depending on API capabilities. Assuming API needs ID for stats.
+            const targetIdForStats = statsTargetId || profileData.id || profileData.Id;
 
-            try {
-                const followersCount = await profileService.getFollowersCount(statsTargetId);
-                const followingCount = await profileService.getFollowingCount(statsTargetId);
-                setStats({ followers: followersCount, following: followingCount });
+            if (targetIdForStats) {
+                try {
+                    const followersCount = await profileService.getFollowersCount(targetIdForStats);
+                    const followingCount = await profileService.getFollowingCount(targetIdForStats);
+                    setStats({ followers: followersCount || 0, following: followingCount || 0 });
 
-                // Determine if I am following this user (if viewing other profile)
-                if (!isOwnProfile && currentUser) {
-                    // We can check if "Me" is in "Their Followers" list, but that endpoint returns full list.
-                    // Optimization: Backend returns count, but checking status might need specific endpoint or client-side check.
-                    // For now, let's assume we can fetch my following list and check if they are in it.
-                    const myFollowing = await profileService.getFollowing(); // My following
-                    const isFound = myFollowing.some(u => (u.username === profileData.username));
-                    setIsFollowing(isFound);
+                    // Determine if I am following this user
+                    if (!isOwnProfile && currentUser) {
+                        const myFollowing = await profileService.getFollowing();
+                        const isFound = Array.isArray(myFollowing) && myFollowing.some(u => (u.username === profileData.username));
+                        setIsFollowing(isFound);
+                    }
+                } catch (e) {
+                    console.error("Failed to load stats", e);
                 }
-
-            } catch (e) {
-                console.error("Failed to load stats", e);
             }
 
         } catch (err) {
             console.error("Failed to fetch profile", err);
-            setError("Could not load profile.");
+            setError("Could not load profile. " + (err.message || ''));
         } finally {
             setIsLoading(false);
         }
@@ -195,6 +213,15 @@ const Profile = () => {
 
     return (
         <div className="page-container">
+            {/* Chat Window Integration */}
+            {showChat && (
+                <ChatWindow
+                    toUser={profile.username}
+                    currentUser={currentUser}
+                    onClose={() => setShowChat(false)}
+                />
+            )}
+
             <div className="profile-header glass-panel">
                 <div className="profile-cover"></div>
                 <div className="profile-content">
@@ -212,6 +239,13 @@ const Profile = () => {
                             )}
                             {!isOwnProfile && (
                                 <div className="profile-actions">
+                                    <button
+                                        className="macos-btn-ghost"
+                                        onClick={() => setShowChat(!showChat)}
+                                        style={{ marginRight: '8px' }}
+                                    >
+                                        Message
+                                    </button>
                                     {isFollowing ? (
                                         <button className="macos-btn-danger" onClick={handleUnfollow}>
                                             Unfollow
