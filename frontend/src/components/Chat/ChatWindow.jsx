@@ -8,6 +8,7 @@ const ChatWindow = ({ toUser, currentUser, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [connected, setConnected] = useState(false);
+    const [errorMsg, setErrorMsg] = useState(null);
     const stompClientRef = useRef(null);
     const messagesEndRef = useRef(null);
 
@@ -16,20 +17,23 @@ const ChatWindow = ({ toUser, currentUser, onClose }) => {
 
         // Note: Connecting to API Gateway which routes to MessagingService
         // Adjust the URL if your gateway configuration differs
-        const socket = new SockJS('http://localhost:9000/MESSAGINGSERVICE/ws');
+        // DIRECT CONNECTION TEST (Bypassing Gateway)
+        const socket = new SockJS('http://localhost:9003/ws');
         const stompClient = Stomp.over(socket);
-        stompClient.debug = null; // Disable debug logs
+        // stompClient.debug = null; // Enable debug logs to see what's happening
+
+        // Fix: Token is stored separately in localStorage, not in currentUser object
+        const token = localStorage.getItem('token');
 
         stompClient.connect(
-            { 'Authorization': `Bearer ${authService.getCurrentUser()?.token}` }, // Assuming token is available
+            { 'Authorization': `Bearer ${token}` },
             (frame) => {
                 setConnected(true);
+                setErrorMsg(null);
                 console.log('Connected to WebSocket');
 
-                // Subscribe to user-specific queue
                 stompClient.subscribe('/user/queue/chat', (message) => {
                     const receivedMsg = JSON.parse(message.body);
-                    // Filter messages relevant to this conversation (optional, if queue is shared)
                     if (receivedMsg.fromUser === toUser || receivedMsg.fromUser === currentUser.username) {
                         setMessages(prev => [...prev, receivedMsg]);
                     }
@@ -38,6 +42,7 @@ const ChatWindow = ({ toUser, currentUser, onClose }) => {
             (error) => {
                 console.error('WebSocket Error:', error);
                 setConnected(false);
+                setErrorMsg("Connection Failed: " + (typeof error === 'string' ? error : 'Check console'));
             }
         );
 
@@ -101,8 +106,8 @@ const ChatWindow = ({ toUser, currentUser, onClose }) => {
                     <span className={`status-dot ${connected ? 'online' : 'offline'}`}></span>
                     <div>
                         <h3>{toUser}</h3>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {connected ? 'Active' : 'Connecting...'}
+                        <span style={{ fontSize: '0.8rem', color: errorMsg ? 'var(--danger-color)' : 'var(--text-secondary)' }}>
+                            {errorMsg || (connected ? 'Active' : 'Connecting...')}
                         </span>
                     </div>
                 </div>
